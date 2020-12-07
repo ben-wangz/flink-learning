@@ -1,0 +1,3 @@
+rootProject.name = "flink-learnning"
+include 'word_count'
+

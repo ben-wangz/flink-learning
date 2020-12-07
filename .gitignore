@@ -1,1 +1,5 @@
-flink-1.11.2-bin-scala_2.11.tgz
+.gradle/
+.idea/
+build/
+gradle/pkg
+gradle/user
