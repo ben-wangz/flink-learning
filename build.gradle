@@ -1,28 +1,11 @@
-buildscript {
-    repositories {
-        maven { url "https://maven.aliyun.com/repository/public" }
-        maven { url "https://maven.aliyun.com/repository/spring" }
-        maven { url "https://maven.aliyun.com/repository/mapr-public" }
-        maven { url "https://maven.aliyun.com/repository/spring-plugin" }
-        maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
-        maven { url "https://maven.aliyun.com/repository/google" }
-        maven { url "https://maven.aliyun.com/repository/jcenter" }
-
-        mavenLocal()
-        mavenCentral()
-    }
-}
 ext {
-    aliyun_repositories = {
-        maven { url "https://maven.aliyun.com/repository/public" }
-        maven { url "https://maven.aliyun.com/repository/spring" }
-        maven { url "https://maven.aliyun.com/repository/mapr-public" }
-        maven { url "https://maven.aliyun.com/repository/spring-plugin" }
-        maven { url "https://maven.aliyun.com/repository/gradle-plugin" }
-        maven { url "https://maven.aliyun.com/repository/google" }
-        maven { url "https://maven.aliyun.com/repository/jcenter" }
-
-        mavenLocal()
-        mavenCentral()
-    }
+    maven_repo_url_list = [
+            "https://maven.aliyun.com/repository/public",
+            "https://maven.aliyun.com/repository/spring",
+            "https://maven.aliyun.com/repository/mapr-public",
+            "https://maven.aliyun.com/repository/spring-plugin",
+            "https://maven.aliyun.com/repository/gradle-plugin",
+            "https://maven.aliyun.com/repository/google",
+            "https://maven.aliyun.com/repository/jcenter",
+    ]
 }
