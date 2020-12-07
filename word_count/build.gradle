@@ -1,0 +1,42 @@
+buildscript {
+    repositories.addAll(project.parent.repositories)
+}
+plugins {
+    id 'java'
+}
+repositories.clear()
+repositories.addAll(buildscript.repositories)
+
+group = "${project.main_group}.${project.getName()}"
+sourceCompatibility = project.java_version
+targetCompatibility = project.java_version
+version = project.main_version
+
+dependencies {
+    testImplementation("junit:junit:4.12")
+}
+test {
+    useJUnit()
+}
+
+def jarName = "${project.getName()}-with-dependencies"
+jar {
+    manifest {
+        attributes "Main-Class": "cn.example.hello.App"
+    }
+    setArchivesBaseName(jarName)
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+task mainInJavaProjectTask(type: Exec) {
+    executable("java")
+    args(
+            "-jar", project.file("build/libs/${jarName}-${project.getVersion()}.jar")
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(jar)
+}
