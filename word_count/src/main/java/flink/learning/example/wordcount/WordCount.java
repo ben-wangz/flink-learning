@@ -8,6 +8,30 @@ import org.apache.flink.api.java.utils.MultipleParameterTool;
 import org.apache.flink.util.Collector;
 
 public class WordCount {
+    public static void main(String[] args) throws Exception {
+        final MultipleParameterTool params = MultipleParameterTool.fromArgs(args);
+        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+        env.getConfig().setGlobalJobParameters(params);
+
+        DataSet<String> text = env.fromElements(WORDS);
+        DataSet<Tuple2<String, Integer>> counts = text.flatMap(new Tokenizer())
+                .groupBy(0)
+                .sum(1);
+        counts.print();
+    }
+
+    public static final class Tokenizer implements FlatMapFunction<String, Tuple2<String, Integer>> {
+        @Override
+        public void flatMap(String value, Collector<Tuple2<String, Integer>> out) {
+            String[] tokens = value.toLowerCase().split("\\W+");
+            for (String token : tokens) {
+                if (token.length() > 0) {
+                    out.collect(new Tuple2<>(token, 1));
+                }
+            }
+        }
+    }
+
     private static final String[] WORDS = new String[]{
             "To be, or not to be,--that is the question:--",
             "Whether 'tis nobler in the mind to suffer",
@@ -45,28 +69,4 @@ public class WordCount {
             "The fair Ophelia!--Nymph, in thy orisons",
             "Be all my sins remember'd."
     };
-
-    public static void main(String[] args) throws Exception {
-        final MultipleParameterTool params = MultipleParameterTool.fromArgs(args);
-        final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-        env.getConfig().setGlobalJobParameters(params);
-
-        DataSet<String> text = env.fromElements(WORDS);
-        DataSet<Tuple2<String, Integer>> counts = text.flatMap(new Tokenizer())
-                .groupBy(0)
-                .sum(1);
-        counts.print();
-    }
-
-    public static final class Tokenizer implements FlatMapFunction<String, Tuple2<String, Integer>> {
-        @Override
-        public void flatMap(String value, Collector<Tuple2<String, Integer>> out) {
-            String[] tokens = value.toLowerCase().split("\\W+");
-            for (String token : tokens) {
-                if (token.length() > 0) {
-                    out.collect(new Tuple2<>(token, 1));
-                }
-            }
-        }
-    }
 }

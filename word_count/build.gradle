@@ -34,26 +34,38 @@ test {
     useJUnit()
 }
 
-def jarName = "${project.getName()}-with-dependencies"
+def main_class = "flink.learning.example.wordcount.WordCount"
+def jarBaseName = "${project.getName()}-with-dependencies"
+def jarPath = "${project.buildDir}/libs/${jarBaseName}-${project.getVersion()}.jar"
 jar {
     manifest {
-        attributes "Main-Class": "flink.learning.example.wordcount.WordCount"
+        attributes "Main-Class": main_class
     }
-    setArchivesBaseName(jarName)
+    setArchivesBaseName(jarBaseName)
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 
+def flinkClientJarName = "flink-clients_2.11-1.11.2.jar"
+def dependencyJarPath = "${project.buildDir}/dependencies"
+task copyDependencies(type: Copy) {
+    from configurations.default
+    include "**/${flinkClientJarName}"
+    into dependencyJarPath
+}
+
 task runLocalWordCount(type: Exec) {
     executable("java")
     args(
-            "-jar", project.file("build/libs/${jarName}-${project.getVersion()}.jar")
+            "-classpath", "${dependencyJarPath}/${flinkClientJarName}:${jarPath}",
+            main_class
     )
     doFirst {
         println("running command: ${String.join(" ", getCommandLine())}")
     }
     dependsOn(jar)
+    dependsOn(copyDependencies)
 }
 
 // ********************** build docker images **********************
@@ -87,6 +99,14 @@ task generateKeys {
         }
     }
 }
+task copyJar(type: Copy) {
+    from file(jarPath)
+    into file(buildDockerPath)
+    rename {
+        fileName -> "${jarBaseName}.jar"
+    }
+    dependsOn(jar)
+}
 def imageName = "single_cluster:${project.getVersion()}"
 task buildImage(type: Exec) {
     executable("docker")
@@ -105,6 +125,7 @@ task buildImage(type: Exec) {
     }
     dependsOn(generateKeys)
     dependsOn(downloadFlinkPackage)
+    dependsOn(copyJar)
 }
 
 /************ groovy functions ************/
