@@ -37,5 +37,6 @@ RUN set -x \
     && ln -s flink-1.11.2 current
 
 FROM flink_installed
-COPY word_count-with-dependencies.jar /opt/word_count/lib/word_count-with-dependencies.jar
+COPY word_count_batch-with-dependencies.jar /opt/word_count_batch/lib/word_count_batch-with-dependencies.jar
+COPY data /opt/word_count_batch/data
 CMD ["bash", "-c", "/opt/flink/current/bin/start-cluster.sh && sleep 1d"]

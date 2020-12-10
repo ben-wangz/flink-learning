@@ -109,6 +109,10 @@ task copyJar(type: Copy) {
     }
     dependsOn(jar)
 }
+task copyData(type: Copy) {
+    from project.file("data")
+    into file("${buildDockerPath}/data")
+}
 def imageName = "single_cluster:${project.getVersion()}"
 task buildImage(type: Exec) {
     executable("docker")
@@ -128,6 +132,7 @@ task buildImage(type: Exec) {
     dependsOn(generateKeys)
     dependsOn(downloadFlinkPackage)
     dependsOn(copyJar)
+    dependsOn(copyData)
 }
 
 /************ groovy functions ************/
