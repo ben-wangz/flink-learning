@@ -68,7 +68,7 @@ public class WordCountStream {
                 kafkaParameters
         );
         executionEnvironment.addSource(new FlinkKafkaConsumer<>(
-                inputTopic,
+                outputTopic,
                 new SimpleStringSchema(),
                 kafkaParameters
         )).print();

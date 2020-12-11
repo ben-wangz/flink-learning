@@ -51,5 +51,4 @@ COPY data /opt/word_count_stream/data
 CMD ["bash", "-c", "/opt/flink/current/bin/start-cluster.sh \
     && /opt/kafka/current/bin/zookeeper-server-start.sh -daemon /opt/kafka/current/config/zookeeper.properties \
     && sleep 5s \
-    && /opt/kafka/current/bin/kafka-server-start.sh -daemon /opt/kafka/current/config/server.properties \
-    && sleep 1d"]
+    && /opt/kafka/current/bin/kafka-server-start.sh -daemon /opt/kafka/current/config/server.properties"]
