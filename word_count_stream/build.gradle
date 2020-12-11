@@ -1,0 +1,291 @@
+buildscript {
+    repositories {
+        for (repo_url in project.parent.ext.maven_repo_url_list) {
+            maven { url(repo_url) }
+        }
+    }
+}
+plugins {
+    id 'java'
+    id "de.undercouch.download" version "4.1.1"
+}
+
+repositories {
+    for (repo_url in project.parent.ext.maven_repo_url_list) {
+        maven { url(repo_url) }
+    }
+}
+
+group = "${project.main_group}.${project.getName()}"
+sourceCompatibility = project.java_version
+targetCompatibility = project.java_version
+version = project.main_version
+
+def flink_version = "1.11.2"
+def scala_binary_version = 2.11
+dependencies {
+    implementation("org.apache.flink:flink-core:${flink_version}")
+    implementation("org.apache.flink:flink-java:${flink_version}")
+    implementation("org.apache.flink:flink-scala_${scala_binary_version}:${flink_version}")
+    implementation("org.apache.flink:flink-clients_${scala_binary_version}:${flink_version}")
+    testImplementation("junit:junit:4.12")
+}
+test {
+    useJUnit()
+}
+
+def main_class = "flink.learning.example.word_count_stream.WordCountStream"
+def jarBaseName = "${project.getName()}-with-dependencies"
+def jarPath = "${project.buildDir}/libs/${jarBaseName}-${project.getVersion()}.jar"
+jar {
+    manifest {
+        attributes "Main-Class": main_class
+    }
+    setArchivesBaseName(jarBaseName)
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+def flinkClientJarName = "flink-clients_2.11-1.11.2.jar"
+def dependencyJarPath = "${project.buildDir}/dependencies"
+task copyDependencies(type: Copy) {
+    from configurations.default
+    include "**/${flinkClientJarName}"
+    into dependencyJarPath
+}
+
+/********************** build docker images **********************/
+def buildDockerPath = "${project.buildDir}/docker/"
+def httpProxy = java.util.Optional.ofNullable(System.getenv("http_proxy")).orElse("")
+def httpsProxy = java.util.Optional.ofNullable(System.getenv("https_proxy")).orElse("")
+
+task downloadFlinkPackage(type: Download) {
+    src "https://mirror.bit.edu.cn/apache/flink/flink-1.11.2/flink-1.11.2-bin-scala_2.11.tgz"
+    dest "${buildDockerPath}/flink-1.11.2-bin-scala_2.11.tgz"
+    tempAndMove true
+    overwrite false
+}
+task downloadKafkaPackage(type: Download) {
+    src "https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.6.0/kafka_2.13-2.6.0.tgz"
+    dest "${buildDockerPath}/kafka_2.13-2.6.0.tgz"
+    tempAndMove true
+    overwrite false
+}
+
+def keysDirectory = "${buildDockerPath}/keys"
+def privateKeyFile = project.file("${keysDirectory}/id_rsa")
+def publicKeyFile = project.file("${keysDirectory}/id_rsa.pub")
+task generateKeys {
+    doLast {
+        if (privateKeyFile.exists() && publicKeyFile.exists()) {
+            println("keys exists, do nothing...")
+            return
+        }
+        privateKeyFile.getParentFile().mkdirs()
+        exec {
+            executable("ssh-keygen")
+            args(
+                    "-t", "rsa",
+                    "-N", "",
+                    "-f", privateKeyFile.getAbsolutePath()
+            )
+        }
+    }
+}
+task copyJar(type: Copy) {
+    from file(jarPath)
+    into file(buildDockerPath)
+    rename {
+        fileName -> "${jarBaseName}.jar"
+    }
+    dependsOn(jar)
+}
+task copyData(type: Copy) {
+    from project.file("data")
+    into file("${buildDockerPath}/data")
+}
+def imageName = "single_cluster:${project.getVersion()}"
+task buildImage(type: Exec) {
+    executable("docker")
+    args(
+            "build", buildDockerPath,
+            "-f", "${project.file("docker/single.cluster.dockerfile")}",
+            "--build-arg", "http_proxy=${httpProxy}",
+            "--build-arg", "https_proxy=${httpsProxy}",
+            "-t", imageName,
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    doLast {
+        println("start command: docker run --rm -d -p 8081:8081 -it ${imageName}")
+    }
+    dependsOn(generateKeys)
+    dependsOn(downloadFlinkPackage)
+    dependsOn(downloadKafkaPackage)
+    dependsOn(copyJar)
+    dependsOn(copyData)
+}
+/********************** build docker images ends **********************/
+
+/************ groovy functions ************/
+def dockerContainerExists(String containerName) {
+    def execResult = exec {
+        commandLine("docker")
+        args("inspect", containerName)
+        ignoreExitValue(true)
+    }
+    return 0 == execResult.getExitValue()
+}
+
+def startDockerContainer(String containerName, String imageName) {
+    exec {
+        commandLine("docker")
+        args(
+                "run", "--rm",
+                "-p", "8081:8081",
+                "-p", "2181:2181",
+                "-p", "9092:9092",
+                "--name", containerName,
+                "-d", imageName,
+        )
+    }
+}
+
+def stopDockerContainer(String containerName) {
+    exec {
+        commandLine("docker")
+        args("kill", containerName)
+    }
+}
+/************ groovy functions ends ************/
+def containerName = "single_cluster"
+task restartDocker() {
+    doLast {
+        def exists = dockerContainerExists(containerName)
+        if (exists) {
+            stopDockerContainer(containerName)
+        }
+        startDockerContainer(containerName, imageName)
+    }
+}
+task stopDocker() {
+    onlyIf {
+        def exists = dockerContainerExists(containerName)
+        if (!exists) {
+            println("${containerName} not exists, do nothing.")
+        }
+        return exists
+    }
+    doLast {
+        stopDockerContainer(containerName)
+    }
+}
+/************ local kafka ************/
+def kafkaLocalHome = "${project.buildDir.getAbsolutePath()}/kafka/kafka_2.13-2.6.0"
+def kafkaTopic = "flink_learning.word_count_batch"
+def bootstrapServer = "localhost:9092"
+task extractKafka(type: Copy) {
+    from tarTree(resources.gzip(file("${buildDockerPath}/kafka_2.13-2.6.0.tgz")))
+    into project.file(kafkaLocalHome).getParentFile()
+    dependsOn(downloadKafkaPackage)
+}
+task startZookeeper(type: Exec) {
+    executable("${kafkaLocalHome}/bin/zookeeper-server-start.sh")
+    args(
+            "-daemon",
+            "${kafkaLocalHome}/config/zookeeper.properties",
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(extractKafka)
+}
+task startKafka(type: Exec) {
+    executable("${kafkaLocalHome}/bin/kafka-server-start.sh")
+    args(
+            "-daemon",
+            "${kafkaLocalHome}/config/server.properties",
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(startZookeeper)
+}
+task createTopic(type: Exec) {
+    executable("${kafkaLocalHome}/bin/kafka-topics.sh")
+    args(
+            "--create",
+            "--topic", kafkaTopic,
+            "--bootstrap-server", bootstrapServer,
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(startKafka)
+}
+task describeTopic(type: Exec) {
+    executable("${kafkaLocalHome}/bin/kafka-topics.sh")
+    args(
+            "--describe",
+            "--topic", kafkaTopic,
+            "--bootstrap-server", bootstrapServer,
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(createTopic)
+}
+task produceDataIntoTopic(type: Exec) {
+    standardInput(new FileInputStream(project.file("data/the_little_match_girl.txt")))
+    executable("${kafkaLocalHome}/bin/kafka-console-producer.sh")
+    args(
+            "--topic", kafkaTopic,
+            "--bootstrap-server", bootstrapServer,
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(describeTopic)
+}
+task consumeMessageFromTopic(type: Exec) {
+    executable("${kafkaLocalHome}/bin/kafka-console-consumer.sh")
+    args(
+            "--topic", kafkaTopic,
+            "--bootstrap-server", bootstrapServer,
+            "--from-beginning",
+            "--timeout-ms", "3000"
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+}
+task stopKafka(type: Exec) {
+    executable("${kafkaLocalHome}/bin/kafka-server-stop.sh")
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+}
+task stopZookeeper(type: Exec) {
+    executable("${kafkaLocalHome}/bin/zookeeper-server-stop.sh")
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(stopKafka)
+}
+/************ local kafka ends ************/
+task runWordCountStream(type: Exec) {
+    executable("java")
+    args(
+            "-classpath", "${dependencyJarPath}/${flinkClientJarName}:${jarPath}",
+            main_class,
+            "--input", "file://${project.file("data").getAbsolutePath()}",
+            "--output", "file://${project.buildDir.getAbsolutePath()}/output",
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(jar)
+    dependsOn(copyDependencies)
+}
