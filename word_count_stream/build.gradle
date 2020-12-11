@@ -28,6 +28,7 @@ dependencies {
     implementation("org.apache.flink:flink-java:${flink_version}")
     implementation("org.apache.flink:flink-scala_${scala_binary_version}:${flink_version}")
     implementation("org.apache.flink:flink-clients_${scala_binary_version}:${flink_version}")
+    implementation("org.apache.flink:flink-connector-kafka_2.11:${flink_version}")
     testImplementation("junit:junit:4.12")
 }
 test {
@@ -145,8 +146,6 @@ def startDockerContainer(String containerName, String imageName) {
         args(
                 "run", "--rm",
                 "-p", "8081:8081",
-                "-p", "2181:2181",
-                "-p", "9092:9092",
                 "--name", containerName,
                 "-d", imageName,
         )
@@ -184,7 +183,7 @@ task stopDocker() {
 }
 /************ local kafka ************/
 def kafkaLocalHome = "${project.buildDir.getAbsolutePath()}/kafka/kafka_2.13-2.6.0"
-def kafkaTopic = "flink_learning.word_count_batch"
+def kafkaTopic = "flink_learning.word_count_batch.input"
 def bootstrapServer = "localhost:9092"
 task extractKafka(type: Copy) {
     from tarTree(resources.gzip(file("${buildDockerPath}/kafka_2.13-2.6.0.tgz")))
@@ -222,6 +221,15 @@ task createTopic(type: Exec) {
     )
     doFirst {
         println("running command: ${String.join(" ", getCommandLine())}")
+        exec {
+            commandLine("${kafkaLocalHome}/bin/kafka-topics.sh")
+            args(
+                    "--delete",
+                    "--topic", kafkaTopic,
+                    "--bootstrap-server", bootstrapServer,
+            )
+            ignoreExitValue true
+        }
     }
     dependsOn(startKafka)
 }
@@ -247,7 +255,7 @@ task produceDataIntoTopic(type: Exec) {
     doFirst {
         println("running command: ${String.join(" ", getCommandLine())}")
     }
-    dependsOn(describeTopic)
+//    dependsOn(describeTopic)
 }
 task consumeMessageFromTopic(type: Exec) {
     executable("${kafkaLocalHome}/bin/kafka-console-consumer.sh")
