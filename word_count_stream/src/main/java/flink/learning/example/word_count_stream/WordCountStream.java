@@ -143,7 +143,7 @@ public class WordCountStream {
         String randomSeed = parameters.get("randomSeed", "flink.word_count_stream.random_seed");
         String inputTopic = parameters.get("input_topic", "flink_learning.word_count_batch.input");
         String outputTopic = parameters.get("output_topic", "flink_learning.word_count_batch.output");
-        String bootstrapServers = parameters.get("bootstrap_servers", "localhost:9092");
+        String bootstrapServers = parameters.get("bootstrap_servers", "host.docker.internal:9092");
 
         WordCountStream wordCountStream = new WordCountStream(
                 baseFilePath,

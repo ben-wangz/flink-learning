@@ -67,12 +67,6 @@ task downloadFlinkPackage(type: Download) {
     tempAndMove true
     overwrite false
 }
-task downloadKafkaPackage(type: Download) {
-    src "https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.6.0/kafka_2.13-2.6.0.tgz"
-    dest "${buildDockerPath}/kafka_2.13-2.6.0.tgz"
-    tempAndMove true
-    overwrite false
-}
 
 def keysDirectory = "${buildDockerPath}/keys"
 def privateKeyFile = project.file("${keysDirectory}/id_rsa")
@@ -121,7 +115,6 @@ task buildAppImage(type: Exec) {
     }
     dependsOn(generateKeys)
     dependsOn(downloadFlinkPackage)
-    dependsOn(downloadKafkaPackage)
     dependsOn(copyJar)
     dependsOn(copyData)
 }
@@ -181,56 +174,61 @@ task stopAppDocker() {
         stopDockerContainer(appContainerName)
     }
 }
-/************ local kafka ************/
-def kafkaLocalHome = "${project.buildDir.getAbsolutePath()}/kafka/kafka_2.13-2.6.0"
-def bootstrapServer = "localhost:9092"
-task extractKafka(type: Copy) {
-    from tarTree(resources.gzip(file("${buildDockerPath}/kafka_2.13-2.6.0.tgz")))
-    into project.file(kafkaLocalHome).getParentFile()
-    dependsOn(downloadKafkaPackage)
-}
-task startKafka(type: Exec) {
-    executable("${kafkaLocalHome}/bin/kafka-server-start.sh")
-    args(
-            "-daemon",
-            "${kafkaLocalHome}/config/server.properties",
-    )
-    doFirst {
-        exec {
-            commandLine("${kafkaLocalHome}/bin/zookeeper-server-start.sh")
-            args(
-                    "-daemon",
-                    "${kafkaLocalHome}/config/zookeeper.properties",
-            )
+def zookeeperContainerName = "single_zookeeper"
+def zookeeperImageName = "wurstmeister/zookeeper:3.4.6"
+task restartZookeeperDocker() {
+    doLast {
+        def exists = dockerContainerExists(zookeeperContainerName)
+        if (exists) {
+            stopDockerContainer(zookeeperContainerName)
         }
-        println("running command: ${String.join(" ", getCommandLine())}")
-    }
-    dependsOn(extractKafka)
-}
-task consumeMessageFromTopic(type: Exec) {
-    executable("${kafkaLocalHome}/bin/kafka-console-consumer.sh")
-    args(
-            "--topic", "flink_learning.word_count_batch.output",
-            "--bootstrap-server", bootstrapServer,
-            "--from-beginning",
-            "--timeout-ms", "3000"
-    )
-    doFirst {
-        println("running command: ${String.join(" ", getCommandLine())}")
+        def extendArgList = ["-p", "2181:2181"]
+        startDockerContainer(zookeeperContainerName, zookeeperImageName, extendArgList)
     }
 }
-task stopKafka(type: Exec) {
-    executable("${kafkaLocalHome}/bin/zookeeper-server-stop.sh")
-    doFirst {
-        println("running command: ${String.join(" ", getCommandLine())}")
+task stopZookeeperDocker() {
+    onlyIf {
+        def exists = dockerContainerExists(zookeeperContainerName)
+        if (!exists) {
+            println("${zookeeperContainerName} not exists, do nothing.")
+        }
+        return exists
     }
     doLast {
-        exec {
-            commandLine("${kafkaLocalHome}/bin/kafka-server-stop.sh")
-        }
+        stopDockerContainer(zookeeperContainerName)
     }
 }
-/************ local kafka ends ************/
+def kafkaContainerName = "single_kafka"
+def kafkaImageName = "wurstmeister/kafka:2.13-2.6.0"
+task restartKafkaDocker() {
+    doLast {
+        def exists = dockerContainerExists(kafkaContainerName)
+        if (exists) {
+            stopDockerContainer(kafkaContainerName)
+        }
+        def extendArgList = [
+                "-p", "9092:9092",
+                "-e", "KAFKA_ADVERTISED_HOST_NAME=host.docker.internal",
+                "-e", "KAFKA_ZOOKEEPER_CONNECT=host.docker.internal:2181",
+        ]
+        startDockerContainer(kafkaContainerName, kafkaImageName, extendArgList)
+    }
+    dependsOn(restartZookeeperDocker)
+}
+task stopKafkaDocker() {
+    onlyIf {
+        def exists = dockerContainerExists(kafkaContainerName)
+        if (!exists) {
+            println("${kafkaContainerName} not exists, do nothing.")
+        }
+        return exists
+    }
+    doLast {
+        stopDockerContainer(kafkaContainerName)
+    }
+    // TODO stop zookeeper first
+    dependsOn(stopZookeeperDocker)
+}
 task runWordCountStream(type: Exec) {
     executable("java")
     args(

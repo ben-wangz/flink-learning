@@ -27,16 +27,7 @@ RUN set -x \
 ENV JAVA_HOME=/usr/lib/jvm/java
 #CMD ["/usr/sbin/init"]
 
-FROM centos_ssh_image as kafka_installed
-ARG KAFKA_ROOT_PATH=/opt/kafka
-COPY kafka_2.13-2.6.0.tgz ${KAFKA_ROOT_PATH}/kafka_2.13-2.6.0.tgz
-RUN set -x \
-    && cd ${KAFKA_ROOT_PATH} \
-    && tar zxf ${KAFKA_ROOT_PATH}/kafka_2.13-2.6.0.tgz \
-    && rm ${KAFKA_ROOT_PATH}/kafka_2.13-2.6.0.tgz \
-    && ln -s kafka_2.13-2.6.0 current
-
-FROM kafka_installed as flink_installed
+FROM centos_ssh_image as flink_installed
 ARG FLINK_ROOT_PATH=/opt/flink
 COPY flink-1.11.2-bin-scala_2.11.tgz ${FLINK_ROOT_PATH}/flink-1.11.2-bin-scala_2.11.tgz
 RUN set -x \
@@ -48,7 +39,4 @@ RUN set -x \
 FROM flink_installed
 COPY word_count_stream-with-dependencies.jar /opt/word_count_stream/lib/word_count_stream-with-dependencies.jar
 COPY data /opt/word_count_stream/data
-CMD ["bash", "-c", "/opt/flink/current/bin/start-cluster.sh \
-    && /opt/kafka/current/bin/zookeeper-server-start.sh -daemon /opt/kafka/current/config/zookeeper.properties \
-    && sleep 5s \
-    && /opt/kafka/current/bin/kafka-server-start.sh -daemon /opt/kafka/current/config/server.properties"]
+CMD ["bash", "-c", "/opt/flink/current/bin/start-cluster.sh && sleep 1d"]
