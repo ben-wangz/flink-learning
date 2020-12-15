@@ -1,4 +1,5 @@
 ### word_count_batch
+
 1. 我们即将做什么
     * 在 word_count 的基础上（word_count 并没有介绍batch 和 stream），介绍一个典型的batch 模式
     * 与 word_count 的区别
@@ -39,7 +40,7 @@
         + 在 http://localhost:8081/ 能看到 job
         + cat /opt/word_count_batch/output 能看到输出内容 （由于只有一个sink 不会产生多个文件，output 即文件）
         + exit
-        + 
+        + ./gradlew --quiet word_count_batch:stopDocker
     * 特别需要注意的是，与流不同，这里的输出是最后的统计结果，中间统计结果不在输出文件中
 4. 从代码的角度看特点
 
