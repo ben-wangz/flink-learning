@@ -1,0 +1,69 @@
+buildscript {
+    repositories {
+        for (repo_url in project.parent.ext.maven_repo_url_list) {
+            maven { url(repo_url) }
+        }
+    }
+}
+plugins {
+    id 'java'
+}
+
+repositories {
+    for (repo_url in project.parent.ext.maven_repo_url_list) {
+        maven { url(repo_url) }
+    }
+}
+
+group = "${project.main_group}.${project.getName()}"
+sourceCompatibility = project.java_version
+targetCompatibility = project.java_version
+version = project.main_version
+
+def flink_version = "1.11.2"
+def scala_binary_version = 2.11
+dependencies {
+    implementation("org.apache.flink:flink-core:${flink_version}")
+    implementation("org.apache.flink:flink-java:${flink_version}")
+    implementation("org.apache.flink:flink-scala_${scala_binary_version}:${flink_version}")
+    implementation("org.apache.flink:flink-clients_${scala_binary_version}:${flink_version}")
+    testImplementation("junit:junit:4.12")
+}
+test {
+    useJUnit()
+}
+
+def main_class = "flink.learning.example.code_trace_life_cycle.WordCountStream"
+def jarBaseName = "${project.getName()}-with-dependencies"
+def jarPath = "${project.buildDir}/libs/${jarBaseName}-${project.getVersion()}.jar"
+jar {
+    manifest {
+        attributes "Main-Class": main_class
+    }
+    setArchivesBaseName(jarBaseName)
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+def flinkClientJarName = "flink-clients_2.11-1.11.2.jar"
+def dependencyJarPath = "${project.buildDir}/dependencies"
+task copyDependencies(type: Copy) {
+    from configurations.default
+    include "**/${flinkClientJarName}"
+    into dependencyJarPath
+}
+
+task runWordCountStream(type: Exec) {
+    executable("java")
+    args(
+            "-classpath", "${dependencyJarPath}/${flinkClientJarName}:${jarPath}",
+            main_class,
+            "--baseFilePath", project.file("data/the_little_match_girl.txt"),
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(jar)
+    dependsOn(copyDependencies)
+}
