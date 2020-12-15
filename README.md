@@ -6,43 +6,52 @@
 4. flink 系统的框架: [flink_architecture](doc/flink_architecture.md)
 5. state 概念篇
 6. time 概念篇
-7. 从场景中寻找 flink 的强大
+7. window 概念篇
+8. 从场景中寻找 flink 的强大
     * 批处理: [word_count_batch](doc/word_count_batch.md)
     * 流处理: [word_count_stream](doc/word_count_stream.md)
-    * Operators
-        + map
-        + flatMap
-        + filter
+    * Operators 与场景
+        + map/flatMap/filter
+        + sum/min/max
         + keyBy/minBy/maxBy
         + reduce
-        + fold
-        + sum/min/max
-        + window/windowAll/WindowFunction
-        + window ReduceFunction/window FoldFunction/window Aggregations
         + union
-        + join
-        + intervalJoin
-        + coGroup
-        + connect
-        + CoMapFunction
-        + split/select
-        + IterativeStream
+        + join/cross/coGroup
     * physical partitioning
         + partitionCustom
         + shuffle
         + rebalance
         + rescale
         + broadcast
-    * chaining
+    * window(stream only)
+        + window
+        + windowAll
+        + apply
+        + window reduce
+        + window aggregation
+        + window join
+        + interval join
+        + coGroup
+    * chaining(stream only)
         + startNewChain
         + disableChaining
         + slotSharingGroup
-8. 启动源码解读
-9. 自定义 source
-10. source 源码解读
-11. 自定义 sink
-12. sink 源码解读
-13. checkpoint 源码解读
+    * others
+        + fold
+        + coMap/coFlatMap
+        + ...
+9. 启动源码解读
+10. source
+    * 自定义一个 source
+    * 源码解读
+11. sink
+    * 自定义一个 sink
+    * 源码解读
+12. checkpoint 与 savepoint
+    * 概念篇
+    * 如何启用
+    * 源码解读
+13. 迭代
 14. flink sql 接口
 15. udf/udaf/udtf
 16. 最佳实践: 实时气象数据分析
