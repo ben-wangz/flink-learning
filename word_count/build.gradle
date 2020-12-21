@@ -1,7 +1,7 @@
 buildscript {
     repositories {
-        for (repo_url in project.parent.ext.maven_repo_url_list) {
-            maven { url(repo_url) }
+        for (mavenRepositoryUrl in project.rootProject.ext.mavenRepositoryUrlList) {
+            maven { url(mavenRepositoryUrl) }
         }
     }
 }
@@ -10,36 +10,35 @@ plugins {
     id "de.undercouch.download" version "4.1.1"
 }
 
+group = project.rootProject.ext.constructGroupName("lib", project.getName())
+version = project.rootProject.constructVersion()
+sourceCompatibility = project.rootProject.ext.javaVersion
+targetCompatibility = project.rootProject.ext.javaVersion
+
 repositories {
-    for (repo_url in project.parent.ext.maven_repo_url_list) {
-        maven { url(repo_url) }
+    for (mavenRepositoryUrl in project.rootProject.ext.mavenRepositoryUrlList) {
+        maven { url(mavenRepositoryUrl) }
     }
 }
 
-group = "${project.main_group}.${project.getName()}"
-sourceCompatibility = project.java_version
-targetCompatibility = project.java_version
-version = project.main_version
-
-def flink_version = "1.11.2"
-def scala_binary_version = 2.11
+def scalaBinaryVersion = project.rootProject.ext.scalaBinaryVersion
 dependencies {
-    implementation("org.apache.flink:flink-core:${flink_version}")
-    implementation("org.apache.flink:flink-java:${flink_version}")
-    implementation("org.apache.flink:flink-scala_${scala_binary_version}:${flink_version}")
-    implementation("org.apache.flink:flink-clients_${scala_binary_version}:${flink_version}")
-    testImplementation("junit:junit:4.12")
+    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-core"))
+    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-java"))
+    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-scala_${scalaBinaryVersion}"))
+    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-clients_${scalaBinaryVersion}"))
+    testImplementation(project.rootProject.ext.jarDependency("junit", "junit"))
 }
 test {
     useJUnit()
 }
 
-def main_class = "flink.learning.example.wordcount.WordCount"
+def mainClass = "flink.learning.example.wordcount.WordCount"
 def jarBaseName = "${project.getName()}-with-dependencies"
 def jarPath = "${project.buildDir}/libs/${jarBaseName}-${project.getVersion()}.jar"
 jar {
     manifest {
-        attributes "Main-Class": main_class
+        attributes "Main-Class": mainClass
     }
     setArchivesBaseName(jarBaseName)
     from {
@@ -59,7 +58,7 @@ task runLocalWordCount(type: Exec) {
     executable("java")
     args(
             "-classpath", "${dependencyJarPath}/${flinkClientJarName}:${jarPath}",
-            main_class
+            mainClass
     )
     doFirst {
         println("running command: ${String.join(" ", getCommandLine())}")
