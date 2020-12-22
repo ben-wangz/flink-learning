@@ -1,0 +1,35 @@
+buildscript {
+    repositories {
+        for (mavenRepositoryUrl in project.rootProject.ext.mavenRepositoryUrlList) {
+            maven { url(mavenRepositoryUrl) }
+        }
+    }
+}
+
+def visualizationBackendJarPath = project.rootProject.ext.visualizationBackendJarPath
+def backendPath = "${project.buildDir.getAbsolutePath()}/backend"
+def backendLibsPath = "${backendPath}/libs"
+def bootJarPath = "${backendLibsPath}/${project.file(visualizationBackendJarPath).getName()}"
+def frontendPath = "${project.buildDir.getAbsolutePath()}/frontend"
+task copyBackend(type: Copy) {
+    from(visualizationBackendJarPath)
+    into(backendLibsPath)
+    dependsOn(":visualization:backend:bootJar")
+}
+task copyFrontend(type: Copy) {
+    from("${project(":visualization:frontend").file("dist").getAbsolutePath()}")
+    into(frontendPath)
+    dependsOn(":visualization:frontend:yarnBuild")
+}
+task run(type: Exec) {
+    commandLine(
+            "java",
+            "-jar", bootJarPath,
+            "--spring.config.location=file:${project.file("application.yaml").getAbsolutePath()}",
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(copyBackend)
+    dependsOn(copyFrontend)
+}

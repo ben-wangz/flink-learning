@@ -1,12 +1,12 @@
 package flink.learning.example.visualization.greeting;
 
-import cn.example.common.Configurable;
+import flink.learning.example.visualization.core.Configurable;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 public class Greeting implements Configurable<String> {
-    private String username;
+    private final String username;
 
     public Greeting(String username) {
         this.username = username;

@@ -89,6 +89,9 @@ ext {
         String groupWithArtifact = "${group}:${artifact}"
         return "${groupWithArtifact}:${ext.jarDependencyVersion(groupWithArtifact)}"
     }
+    visualizationBackendJarBaseName = "${project.getName()}-with-dependencies"
+    visualizationBackendJarPath = "${project(":visualization:backend").buildDir}/libs/" +
+            "${ext.visualizationBackendJarBaseName}-${ext.constructVersion()}.jar"
     dockerContainerExists = { String containerName ->
         def execResult = exec {
             commandLine("docker")

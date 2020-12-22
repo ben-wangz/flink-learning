@@ -1,8 +1,13 @@
+import org.apache.commons.lang3.RandomStringUtils
+
 buildscript {
     repositories {
         for (mavenRepositoryUrl in project.rootProject.ext.mavenRepositoryUrlList) {
             maven { url(mavenRepositoryUrl) }
         }
+    }
+    dependencies {
+        classpath project.rootProject.ext.jarDependency("org.apache.commons", "commons-lang3")
     }
 }
 plugins {
@@ -35,19 +40,19 @@ test {
     useJUnit()
 }
 
-def jarBaseName = "${project.getName()}-with-dependencies"
-def jarPath = "${project.buildDir}/libs/${jarBaseName}-${project.getVersion()}.jar"
+def jarBaseName = project.rootProject.ext.visualizationBackendJarBaseName
+def jarPath = project.rootProject.ext.visualizationBackendJarPath
 bootJar {
     baseName(jarBaseName)
 }
 task runWithJar(type: Exec) {
-    executable("java")
-    args(
+    commandLine(
+            "java",
             "-jar", jarPath,
     )
     doFirst {
         println("running command: ${String.join(" ", getCommandLine())}")
-        println("access with chrome: http://localhost:8080/greeting?username=${randomAlphabetic(8)}")
+        println("access with chrome: http://localhost:8080/greeting?username=${RandomStringUtils.randomAlphabetic(8)}")
     }
     dependsOn(bootJar)
 }
