@@ -27,6 +27,7 @@ dependencies {
     implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-java"))
     implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-scala_${scalaBinaryVersion}"))
     implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-clients_${scalaBinaryVersion}"))
+    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-connector-kafka_2.11"))
     testImplementation(project.rootProject.ext.jarDependency("junit", "junit"))
 }
 test {
@@ -118,111 +119,80 @@ task buildAppImage(type: Exec) {
 }
 /********************** build docker images ends **********************/
 
-/************ groovy functions ************/
-def dockerContainerExists(String containerName) {
-    def execResult = exec {
-        commandLine("docker")
-        args("inspect", containerName)
-        ignoreExitValue(true)
-    }
-    return 0 == execResult.getExitValue()
-}
-
-def startDockerContainer(String containerName, String imageName, List<String> extendArgList) {
-    exec {
-        List<String> argumentList = new ArrayList<>()
-        argumentList.addAll("run", "--rm")
-        extendArgList.each { argument -> argumentList.add(argument) }
-        argumentList.addAll(
-                "--name", containerName,
-                "-d", imageName,
-        )
-        commandLine("docker")
-        args(argumentList)
-    }
-}
-
-def stopDockerContainer(String containerName) {
-    exec {
-        commandLine("docker")
-        args("kill", containerName)
-    }
-}
-/************ groovy functions ends ************/
 def appContainerName = "single_cluster"
 task restartAppDocker() {
     doLast {
-        def exists = dockerContainerExists(appContainerName)
+        def exists = project.rootProject.ext.dockerContainerExists(appContainerName)
         if (exists) {
-            stopDockerContainer(appContainerName)
+            project.rootProject.ext.stopDockerContainer(appContainerName)
         }
         def extendArgList = ["-p", "8081:8081"]
-        startDockerContainer(appContainerName, imageName, extendArgList)
+        project.rootProject.ext.startDockerContainer(appContainerName, imageName, extendArgList)
     }
 }
 task stopAppDocker() {
     onlyIf {
-        def exists = dockerContainerExists(appContainerName)
+        def exists = project.rootProject.ext.dockerContainerExists(appContainerName)
         if (!exists) {
             println("${appContainerName} not exists, do nothing.")
         }
         return exists
     }
     doLast {
-        stopDockerContainer(appContainerName)
+        project.rootProject.ext.stopDockerContainer(appContainerName)
     }
 }
 def zookeeperContainerName = "single_zookeeper"
 def zookeeperImageName = "wurstmeister/zookeeper:3.4.6"
 task restartZookeeperDocker() {
     doLast {
-        def exists = dockerContainerExists(zookeeperContainerName)
+        def exists = project.rootProject.ext.dockerContainerExists(zookeeperContainerName)
         if (exists) {
-            stopDockerContainer(zookeeperContainerName)
+            project.rootProject.ext.stopDockerContainer(zookeeperContainerName)
         }
         def extendArgList = ["-p", "2181:2181"]
-        startDockerContainer(zookeeperContainerName, zookeeperImageName, extendArgList)
+        project.rootProject.ext.startDockerContainer(zookeeperContainerName, zookeeperImageName, extendArgList)
     }
 }
 task stopZookeeperDocker() {
     onlyIf {
-        def exists = dockerContainerExists(zookeeperContainerName)
+        def exists = project.rootProject.ext.dockerContainerExists(zookeeperContainerName)
         if (!exists) {
             println("${zookeeperContainerName} not exists, do nothing.")
         }
         return exists
     }
     doLast {
-        stopDockerContainer(zookeeperContainerName)
+        project.rootProject.ext.stopDockerContainer(zookeeperContainerName)
     }
 }
 def kafkaContainerName = "single_kafka"
 def kafkaImageName = "wurstmeister/kafka:2.13-2.6.0"
 task restartKafkaDocker() {
     doLast {
-        def exists = dockerContainerExists(kafkaContainerName)
+        def exists = project.rootProject.ext.dockerContainerExists(kafkaContainerName)
         if (exists) {
-            stopDockerContainer(kafkaContainerName)
+            project.rootProject.ext.stopDockerContainer(kafkaContainerName)
         }
         def extendArgList = [
                 "-p", "9092:9092",
                 "-e", "KAFKA_ADVERTISED_HOST_NAME=host.docker.internal",
                 "-e", "KAFKA_ZOOKEEPER_CONNECT=host.docker.internal:2181",
         ]
-        startDockerContainer(kafkaContainerName, kafkaImageName, extendArgList)
+        project.rootProject.ext.startDockerContainer(kafkaContainerName, kafkaImageName, extendArgList)
     }
     dependsOn(restartZookeeperDocker)
 }
 task stopKafkaDocker() {
     onlyIf {
-        def exists = dockerContainerExists(kafkaContainerName)
+        def exists = project.rootProject.ext.dockerContainerExists(kafkaContainerName)
         if (!exists) {
             println("${kafkaContainerName} not exists, do nothing.")
         }
         return exists
     }
     doLast {
-        stopDockerContainer(kafkaContainerName)
+        project.rootProject.ext.stopDockerContainer(kafkaContainerName)
     }
     // TODO stop zookeeper first
     dependsOn(stopZookeeperDocker)

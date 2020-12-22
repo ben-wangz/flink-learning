@@ -12,6 +12,7 @@
     * word_count_stream 的输入是一个无限流，会一直执行
     * 可以看到启动后程序不断将统计结果输出到屏幕上
     * 当然，与 word_count 一样，也可以启动一个docker，并将其提交到 flink cluster
+        +  不要忘记启动 zookeeper 和 kafka 服务: ./gradlew --quiet word_count_stream:restartKafkaDocker
         + ./gradlew --quiet word_count_stream:buildAppImage
         + ./gradlew --quiet word_count_stream:restartAppDocker
         + docker exec -it single_cluster bash

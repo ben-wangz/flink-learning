@@ -50,6 +50,7 @@ ext {
         def versionMapping = [
                 "org.apache.flink:flink-core"                   : flinkVersion,
                 "org.apache.flink:flink-java"                   : flinkVersion,
+                "org.apache.flink:flink-connector-kafka_2.11"   : flinkVersion,
                 "org.inferred:freebuilder"                      : "2.6.1",
                 "com.google.code.findbugs:jsr305"               : "3.0.2",
                 "com.google.guava:guava"                        : "29.0-jre",
@@ -87,5 +88,32 @@ ext {
     jarDependency = { group, artifact ->
         String groupWithArtifact = "${group}:${artifact}"
         return "${groupWithArtifact}:${ext.jarDependencyVersion(groupWithArtifact)}"
+    }
+    dockerContainerExists = { String containerName ->
+        def execResult = exec {
+            commandLine("docker")
+            args("inspect", containerName)
+            ignoreExitValue(true)
+        }
+        return 0 == execResult.getExitValue()
+    }
+    startDockerContainer = { String containerName, String imageName, List<String> extendArgList ->
+        exec {
+            List<String> argumentList = new ArrayList<>()
+            argumentList.addAll("run", "--rm")
+            extendArgList.each { argument -> argumentList.add(argument) }
+            argumentList.addAll(
+                    "--name", containerName,
+                    "-d", imageName,
+            )
+            commandLine("docker")
+            args(argumentList)
+        }
+    }
+    stopDockerContainer = { String containerName ->
+        exec {
+            commandLine("docker")
+            args("kill", containerName)
+        }
     }
 }

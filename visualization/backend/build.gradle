@@ -35,202 +35,24 @@ test {
     useJUnit()
 }
 
-def mainClass = "flink.learning.example.word_count_stream.WordCountStream"
 def jarBaseName = "${project.getName()}-with-dependencies"
 def jarPath = "${project.buildDir}/libs/${jarBaseName}-${project.getVersion()}.jar"
-jar {
-    manifest {
-        attributes "Main-Class": mainClass
-    }
-    setArchivesBaseName(jarBaseName)
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+bootJar {
+    baseName(jarBaseName)
 }
-
-def flinkClientJarName = "flink-clients_2.11-1.11.2.jar"
-def dependencyJarPath = "${project.buildDir}/dependencies"
-task copyDependencies(type: Copy) {
-    from configurations.default
-    include "**/${flinkClientJarName}"
-    into dependencyJarPath
+task runWithJar(type: Exec) {
+    executable("java")
+    args(
+            "-jar", jarPath,
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+        println("access with chrome: http://localhost:8080/greeting?username=${randomAlphabetic(8)}")
+    }
+    dependsOn(bootJar)
 }
 
 /********************** build docker images **********************/
 def buildDockerPath = "${project.buildDir}/docker/"
 def httpProxy = java.util.Optional.ofNullable(System.getenv("http_proxy")).orElse("")
 def httpsProxy = java.util.Optional.ofNullable(System.getenv("https_proxy")).orElse("")
-
-def keysDirectory = "${buildDockerPath}/keys"
-def privateKeyFile = project.file("${keysDirectory}/id_rsa")
-def publicKeyFile = project.file("${keysDirectory}/id_rsa.pub")
-task generateKeys {
-    doLast {
-        if (privateKeyFile.exists() && publicKeyFile.exists()) {
-            println("keys exists, do nothing...")
-            return
-        }
-        privateKeyFile.getParentFile().mkdirs()
-        exec {
-            executable("ssh-keygen")
-            args(
-                    "-t", "rsa",
-                    "-N", "",
-                    "-f", privateKeyFile.getAbsolutePath()
-            )
-        }
-    }
-}
-task copyJar(type: Copy) {
-    from file(jarPath)
-    into file(buildDockerPath)
-    rename {
-        fileName -> "${jarBaseName}.jar"
-    }
-    dependsOn(jar)
-}
-task copyData(type: Copy) {
-    from project.file("data")
-    into file("${buildDockerPath}/data")
-}
-def imageName = "single_cluster:${project.getVersion()}"
-task buildAppImage(type: Exec) {
-    executable("docker")
-    args(
-            "build", buildDockerPath,
-            "-f", "${project.file("docker/single.cluster.dockerfile")}",
-            "--build-arg", "http_proxy=${httpProxy}",
-            "--build-arg", "https_proxy=${httpsProxy}",
-            "-t", imageName,
-    )
-    doFirst {
-        println("running command: ${String.join(" ", getCommandLine())}")
-    }
-    dependsOn(generateKeys)
-    dependsOn(copyJar)
-    dependsOn(copyData)
-}
-/********************** build docker images ends **********************/
-
-/************ groovy functions ************/
-def dockerContainerExists(String containerName) {
-    def execResult = exec {
-        commandLine("docker")
-        args("inspect", containerName)
-        ignoreExitValue(true)
-    }
-    return 0 == execResult.getExitValue()
-}
-
-def startDockerContainer(String containerName, String imageName, List<String> extendArgList) {
-    exec {
-        List<String> argumentList = new ArrayList<>()
-        argumentList.addAll("run", "--rm")
-        extendArgList.each { argument -> argumentList.add(argument) }
-        argumentList.addAll(
-                "--name", containerName,
-                "-d", imageName,
-        )
-        commandLine("docker")
-        args(argumentList)
-    }
-}
-
-def stopDockerContainer(String containerName) {
-    exec {
-        commandLine("docker")
-        args("kill", containerName)
-    }
-}
-/************ groovy functions ends ************/
-def appContainerName = "single_cluster"
-task restartAppDocker() {
-    doLast {
-        def exists = dockerContainerExists(appContainerName)
-        if (exists) {
-            stopDockerContainer(appContainerName)
-        }
-        def extendArgList = ["-p", "8081:8081"]
-        startDockerContainer(appContainerName, imageName, extendArgList)
-    }
-}
-task stopAppDocker() {
-    onlyIf {
-        def exists = dockerContainerExists(appContainerName)
-        if (!exists) {
-            println("${appContainerName} not exists, do nothing.")
-        }
-        return exists
-    }
-    doLast {
-        stopDockerContainer(appContainerName)
-    }
-}
-def zookeeperContainerName = "single_zookeeper"
-def zookeeperImageName = "wurstmeister/zookeeper:3.4.6"
-task restartZookeeperDocker() {
-    doLast {
-        def exists = dockerContainerExists(zookeeperContainerName)
-        if (exists) {
-            stopDockerContainer(zookeeperContainerName)
-        }
-        def extendArgList = ["-p", "2181:2181"]
-        startDockerContainer(zookeeperContainerName, zookeeperImageName, extendArgList)
-    }
-}
-task stopZookeeperDocker() {
-    onlyIf {
-        def exists = dockerContainerExists(zookeeperContainerName)
-        if (!exists) {
-            println("${zookeeperContainerName} not exists, do nothing.")
-        }
-        return exists
-    }
-    doLast {
-        stopDockerContainer(zookeeperContainerName)
-    }
-}
-def kafkaContainerName = "single_kafka"
-def kafkaImageName = "wurstmeister/kafka:2.13-2.6.0"
-task restartKafkaDocker() {
-    doLast {
-        def exists = dockerContainerExists(kafkaContainerName)
-        if (exists) {
-            stopDockerContainer(kafkaContainerName)
-        }
-        def extendArgList = [
-                "-p", "9092:9092",
-                "-e", "KAFKA_ADVERTISED_HOST_NAME=host.docker.internal",
-                "-e", "KAFKA_ZOOKEEPER_CONNECT=host.docker.internal:2181",
-        ]
-        startDockerContainer(kafkaContainerName, kafkaImageName, extendArgList)
-    }
-    dependsOn(restartZookeeperDocker)
-}
-task stopKafkaDocker() {
-    onlyIf {
-        def exists = dockerContainerExists(kafkaContainerName)
-        if (!exists) {
-            println("${kafkaContainerName} not exists, do nothing.")
-        }
-        return exists
-    }
-    doLast {
-        stopDockerContainer(kafkaContainerName)
-    }
-    // TODO stop zookeeper first
-    dependsOn(stopZookeeperDocker)
-}
-task runWordCountStream(type: Exec) {
-    executable("java")
-    args(
-            "-classpath", "${dependencyJarPath}/${flinkClientJarName}:${jarPath}",
-            mainClass,
-            "--baseFilePath", project.file("data/the_little_match_girl.txt"),
-    )
-    doFirst {
-        println("running command: ${String.join(" ", getCommandLine())}")
-    }
-    dependsOn(jar)
-    dependsOn(copyDependencies)
-}

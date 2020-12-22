@@ -134,54 +134,26 @@ task buildImage(type: Exec) {
     dependsOn(copyData)
 }
 
-/************ groovy functions ************/
-def dockerContainerExists(String containerName) {
-    def execResult = exec {
-        commandLine("docker")
-        args("inspect", containerName)
-        ignoreExitValue(true)
-    }
-    return 0 == execResult.getExitValue()
-}
-
-def startDockerContainer(String containerName, String imageName) {
-    exec {
-        commandLine("docker")
-        args(
-                "run", "--rm",
-                "-p", "8081:8081",
-                "--name", containerName,
-                "-d", imageName,
-        )
-    }
-}
-
-def stopDockerContainer(String containerName) {
-    exec {
-        commandLine("docker")
-        args("kill", containerName)
-    }
-}
-/************ groovy functions ends ************/
 def containerName = "single_cluster"
 task restartDocker() {
     doLast {
-        def exists = dockerContainerExists(containerName)
+        def exists = project.rootProject.ext.dockerContainerExists(containerName)
         if (exists) {
-            stopDockerContainer(containerName)
+            project.rootProject.ext.stopDockerContainer(containerName)
         }
-        startDockerContainer(containerName, imageName)
+        def extendArgList = ["-p", "8081:8081"]
+        project.rootProject.ext.startDockerContainer(containerName, imageName, extendArgList)
     }
 }
 task stopDocker() {
     onlyIf {
-        def exists = dockerContainerExists(containerName)
+        def exists = project.rootProject.ext.dockerContainerExists(containerName)
         if (!exists) {
             println("${containerName} not exists, do nothing.")
         }
         return exists
     }
     doLast {
-        stopDockerContainer(containerName)
+        project.rootProject.ext.stopDockerContainer(containerName)
     }
 }
