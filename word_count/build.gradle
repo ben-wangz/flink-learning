@@ -10,7 +10,7 @@ plugins {
     id "de.undercouch.download" version "4.1.1"
 }
 
-group = project.rootProject.ext.constructGroupName("lib", project.getName())
+group = project.rootProject.ext.constructGroupName("", project.getName())
 version = project.rootProject.constructVersion()
 sourceCompatibility = project.rootProject.ext.javaVersion
 targetCompatibility = project.rootProject.ext.javaVersion

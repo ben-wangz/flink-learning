@@ -9,7 +9,7 @@ plugins {
     id 'java'
 }
 
-group = project.rootProject.ext.constructGroupName("lib", project.getName())
+group = project.rootProject.ext.constructGroupName("", project.getName())
 version = project.rootProject.constructVersion()
 sourceCompatibility = project.rootProject.ext.javaVersion
 targetCompatibility = project.rootProject.ext.javaVersion

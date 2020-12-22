@@ -11,7 +11,7 @@ plugins {
     id "io.spring.dependency-management" version "1.0.8.RELEASE"
 }
 
-group = project.rootProject.ext.constructGroupName("lib", project.getName())
+group = project.rootProject.ext.constructGroupName("", project.getName())
 version = project.rootProject.constructVersion()
 sourceCompatibility = project.rootProject.ext.javaVersion
 targetCompatibility = project.rootProject.ext.javaVersion
