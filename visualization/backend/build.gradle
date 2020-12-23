@@ -12,6 +12,7 @@ buildscript {
 }
 plugins {
     id 'java'
+    id 'org.inferred.processors' version '3.3.0'
     id "org.springframework.boot" version "2.2.2.RELEASE"
     id "io.spring.dependency-management" version "1.0.8.RELEASE"
 }
@@ -28,6 +29,7 @@ repositories {
 }
 
 dependencies {
+    processor 'org.inferred:freebuilder:2.6.1'
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation(project.rootProject.ext.jarDependency("com.google.guava", "guava"))
     implementation(project.rootProject.ext.jarDependency("org.apache.commons", "commons-lang3"))
