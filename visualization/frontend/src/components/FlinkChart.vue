@@ -1,0 +1,96 @@
+<template>
+  <div class="flink-chart">
+    <chart ref="barChart" :options="chartOptions" :auto-resize="true"></chart>
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
+const URL = '/queryDataWithPrefix?namePrefix=test_';
+const baseOption = {
+    title: {
+        text: 'Flink动态数据'
+    },
+    tooltip: {},
+    legend: {
+        data:['时间']
+    },
+    xAxis: {
+      type: 'category',
+      data: []
+    },
+    yAxis: {},
+    series: [{
+        name: '值',
+        type: 'line',
+        data: []
+    }]
+};
+let __interval = 10000;
+let __timer;
+
+function preProcess(res) {
+  let x = [];
+  let y = [];
+  Object.keys(res.data).forEach(key => {
+    x.push(key);
+    y.push(res.data[key]);
+  })
+  return {x, y};
+}
+export default {
+  name: 'FlinkChart',
+  data() {
+    return { chartOptions: baseOption }
+  },
+  mounted() {
+    this.init();
+  },
+  unmounted() {
+    clearInterval(__timer);
+  },
+  methods: {
+    updateChart({x, y}) {
+      const length = this.chartOptions.series[0].data.length;
+      let xAxis = [...this.chartOptions.xAxis.data.splice(length - 40, length), ...x];
+      let data = [...this.chartOptions.series[0].data.splice(length - 40, length), ...y];
+      baseOption.xAxis.data = xAxis;
+      baseOption.series[0].data = data;
+      this.chartOptions = baseOption;
+    },
+    fetchData(limit = 10) {
+      return axios.get(URL + `&limit=${limit}`).then(res => res.data)
+    },
+    init() {
+      this.$refs.barChart.showLoading();
+      this.fetchData().then(res => {
+        if (Object.keys(res.data).length) {
+          this.$refs.barChart.hideLoading();
+          this.updateChart(preProcess(res));
+          Object.keys(res.data).length && this.doTimer();
+        } else {
+          window.alert('无数据');
+        }
+      })
+    },
+    doTimer() {
+      __timer = setInterval(() => {
+        this.fetchData().then(res => {
+          if (Object.keys(res.data).length) {
+            this.updateChart(preProcess(res));
+          }
+        })
+      }, __interval);
+    }
+  }
+}
+</script>
+<style scoped>
+.flink-chart {
+  text-align: center;
+}
+.echarts {
+  margin: 0 auto;
+}
+
+</style>
