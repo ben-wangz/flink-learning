@@ -2,6 +2,7 @@ package flink.learning.example.visualization.service;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,11 +19,13 @@ public class DataKeeperService {
         dataPool.put(name, json);
     }
 
-    public Map<String, String> queryDataWithPrefix(String namePrefix) {
+    public Map<String, String> queryDataWithPrefix(String namePrefix, int limit) {
         return dataPool.entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith(namePrefix))
+                .sorted(Map.Entry.comparingByKey(Comparator.reverseOrder()))
+                .limit(limit)
                 .collect(Collectors.toMap(
-                        Map.Entry::getKey,
+                        entry -> entry.getKey().replace(namePrefix, ""),
                         Map.Entry::getValue
                 ));
     }

@@ -27,9 +27,10 @@ public class DataKeeperController {
 
     @RequestMapping("/queryDataWithPrefix")
     public Response queryDataWithPrefix(
-            @RequestParam("namePrefix") String namePrefix
+            @RequestParam("namePrefix") String namePrefix,
+            @RequestParam(value = "limit", defaultValue = "100") int limit
     ) {
-        Map<String, String> data = dataKeeperService.queryDataWithPrefix(namePrefix);
+        Map<String, String> data = dataKeeperService.queryDataWithPrefix(namePrefix, limit);
         return Response.Builder.newInstance()
                 .success(true)
                 .data(data)
