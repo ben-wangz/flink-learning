@@ -26,16 +26,18 @@ const baseOption = {
         data: []
     }]
 };
-let __interval = 10000;
+let __interval = 2000;
 let __timer;
 
 function preProcess(res) {
   let x = [];
   let y = [];
-  Object.keys(res.data).forEach(key => {
-    x.push(key);
-    y.push(res.data[key]);
-  })
+  Object.keys(res.data)
+    .sort((a,b) => +a - +b)
+    .forEach(key => {
+      x.push(key);
+      y.push(res.data[key]);
+    })
   return {x, y};
 }
 export default {
@@ -51,14 +53,11 @@ export default {
   },
   methods: {
     updateChart({x, y}) {
-      const length = this.chartOptions.series[0].data.length;
-      let xAxis = [...this.chartOptions.xAxis.data.splice(length - 40, length), ...x];
-      let data = [...this.chartOptions.series[0].data.splice(length - 40, length), ...y];
-      baseOption.xAxis.data = xAxis;
-      baseOption.series[0].data = data;
+      baseOption.xAxis.data = x;
+      baseOption.series[0].data = y;
       this.chartOptions = baseOption;
     },
-    fetchData(limit = 10) {
+    fetchData(limit = 100) {
       return axios.get(URL + `&limit=${limit}`).then(res => res.data)
     },
     init() {
@@ -91,6 +90,8 @@ export default {
 }
 .echarts {
   margin: 0 auto;
+  width: 800px;
+  height: 600px;
 }
 
 </style>

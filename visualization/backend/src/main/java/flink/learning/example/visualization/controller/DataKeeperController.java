@@ -36,4 +36,13 @@ public class DataKeeperController {
                 .data(data)
                 .build();
     }
+
+    @RequestMapping("/clear")
+    public Response clear(
+    ) {
+        dataKeeperService.clear();
+        return Response.Builder.newInstance()
+                .success(true)
+                .build();
+    }
 }

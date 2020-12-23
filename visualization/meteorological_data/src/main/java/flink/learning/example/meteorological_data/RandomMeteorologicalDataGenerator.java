@@ -60,7 +60,7 @@ public class RandomMeteorologicalDataGenerator implements Iterable<String>, Seri
                 } catch (InterruptedException e) {
                     LOGGER.warn(String.format("interrupted: %s", e.getMessage()), e);
                 }
-                double wave = random.nextDouble() * 3;
+                double wave = random.nextDouble() * 3 - 3.0 / 2;
                 double currentTemperature = lastTemperature + wave;
                 lastTemperature = currentTemperature;
                 return String.valueOf(currentTemperature);
