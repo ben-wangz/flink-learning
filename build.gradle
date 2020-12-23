@@ -76,6 +76,7 @@ ext {
                 "com.google.protobuf:protoc"                    : "3.12.0",
                 "junit:junit"                                   : "4.12",
                 "org.apache.tomcat:annotations-api"             : "6.0.53",
+                "org.apache.httpcomponents:httpclient"          : "4.5.13",
         ]
         versionMapping.put(flinkScala, flinkVersion)
         versionMapping.put(flinkClients, flinkVersion)
@@ -89,9 +90,12 @@ ext {
         String groupWithArtifact = "${group}:${artifact}"
         return "${groupWithArtifact}:${ext.jarDependencyVersion(groupWithArtifact)}"
     }
-    visualizationBackendJarBaseName = "${project.getName()}-with-dependencies"
+    visualizationBackendJarBaseName = "visualizationBackend-with-dependencies"
     visualizationBackendJarPath = "${project(":visualization:backend").buildDir}/libs/" +
             "${ext.visualizationBackendJarBaseName}-${ext.constructVersion()}.jar"
+    visualizationMeteorologicalDataJarBaseName = "visualizationMeteorologicalData-with-dependencies"
+    visualizationMeteorologicalDataJarPath = "${project(":visualization:meteorological_data").buildDir}/libs/" +
+            "${ext.visualizationMeteorologicalDataJarBaseName}-${ext.constructVersion()}.jar"
     dockerContainerExists = { String containerName ->
         def execResult = exec {
             commandLine("docker")

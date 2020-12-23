@@ -6,7 +6,7 @@
 
 <script>
 import axios from 'axios'
-const URL = '/queryDataWithPrefix?namePrefix=test_';
+const URL = '/queryDataWithPrefix?namePrefix=MeteorologicalDataStream_';
 const baseOption = {
     title: {
         text: 'Flink动态数据'
