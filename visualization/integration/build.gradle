@@ -1,3 +1,5 @@
+import groovy.text.SimpleTemplateEngine
+
 buildscript {
     repositories {
         for (mavenRepositoryUrl in project.rootProject.ext.mavenRepositoryUrlList) {
@@ -21,15 +23,26 @@ task copyFrontend(type: Copy) {
     into(frontendPath)
     dependsOn(":visualization:frontend:yarnBuild")
 }
-task run(type: Exec) {
+def applicationConfigPath = "${backendPath}/application.yaml"
+task renderApplicationConfig() {
+    doLast {
+        def templateText = project.file("application.template.yaml").text
+        def binding = ["frontend_absolute_path": frontendPath]
+        def engine = new SimpleTemplateEngine()
+        def applicationConfigContent = engine.createTemplate(templateText).make(binding)
+        project.file(applicationConfigPath).text = applicationConfigContent
+    }
+}
+task runWeb(type: Exec) {
     commandLine(
             "java",
             "-jar", bootJarPath,
-            "--spring.config.location=file:${project.file("application.yaml").getAbsolutePath()}",
+            "--spring.config.location=file:${applicationConfigPath}",
     )
     doFirst {
         println("running command: ${String.join(" ", getCommandLine())}")
     }
     dependsOn(copyBackend)
     dependsOn(copyFrontend)
+    dependsOn(renderApplicationConfig)
 }
