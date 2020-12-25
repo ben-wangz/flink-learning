@@ -7,7 +7,6 @@ buildscript {
 }
 plugins {
     id 'java'
-    id "de.undercouch.download" version "4.1.1"
 }
 
 group = project.rootProject.ext.constructGroupName("", project.getName())
@@ -72,11 +71,10 @@ def buildDockerPath = "${project.buildDir}/docker/"
 def httpProxy = java.util.Optional.ofNullable(System.getenv("http_proxy")).orElse("")
 def httpsProxy = java.util.Optional.ofNullable(System.getenv("https_proxy")).orElse("")
 
-task downloadFlinkPackage(type: Download) {
-    src "https://mirror.bit.edu.cn/apache/flink/flink-1.11.2/flink-1.11.2-bin-scala_2.11.tgz"
-    dest "${buildDockerPath}/flink-1.11.2-bin-scala_2.11.tgz"
-    tempAndMove true
-    overwrite false
+task copyFlinkPackage(type: Copy) {
+    from project.rootProject.ext.flinkPackagePath
+    into "${buildDockerPath}"
+    dependsOn(":downloadFlinkPackage")
 }
 def keysDirectory = "${buildDockerPath}/keys"
 def privateKeyFile = project.file("${keysDirectory}/id_rsa")
@@ -123,7 +121,7 @@ task buildImage(type: Exec) {
         println("start command: docker run --rm -d -p 8081:8081 -it ${imageName}")
     }
     dependsOn(generateKeys)
-    dependsOn(downloadFlinkPackage)
+    dependsOn(copyFlinkPackage)
     dependsOn(copyJar)
 }
 def containerName = "single_cluster"

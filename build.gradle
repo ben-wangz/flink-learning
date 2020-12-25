@@ -1,3 +1,21 @@
+buildscript {
+    repositories {
+        for (mavenRepositoryUrl in [
+                "https://maven.aliyun.com/repository/public",
+                "https://maven.aliyun.com/repository/spring",
+                "https://maven.aliyun.com/repository/mapr-public",
+                "https://maven.aliyun.com/repository/spring-plugin",
+                "https://maven.aliyun.com/repository/gradle-plugin",
+                "https://maven.aliyun.com/repository/google",
+                "https://maven.aliyun.com/repository/jcenter",
+        ]) {
+            maven { url(mavenRepositoryUrl) }
+        }
+    }
+}
+plugins {
+    id "de.undercouch.download" version "4.1.1"
+}
 ext {
     coreName = project.getName()
     mainVersion = "v1.0.0"
@@ -123,4 +141,12 @@ ext {
             args("kill", containerName)
         }
     }
+    flinkPackagePath = "${project.buildDir.getAbsolutePath()}/flink-1.11.2-bin-scala_2.11.tgz"
+}
+
+task downloadFlinkPackage(type: Download) {
+    src "https://mirror.bit.edu.cn/apache/flink/flink-1.11.2/flink-1.11.2-bin-scala_2.11.tgz"
+    dest project.ext.flinkPackagePath
+    tempAndMove true
+    overwrite false
 }
