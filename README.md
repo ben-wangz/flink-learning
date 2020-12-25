@@ -10,6 +10,7 @@
 8. 从场景中寻找 flink 的强大
     * 批处理: [word_count_batch](doc/word_count_batch.md)
     * 流处理: [word_count_stream](doc/word_count_stream.md)
+    * 气象数据实时可视化的例子: [visualization:meteorological_data](doc/visualization.md)
     * Operators 与场景
         + map/flatMap/filter
         + sum/min/max
