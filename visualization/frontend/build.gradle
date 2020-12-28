@@ -21,7 +21,10 @@ node {
     workDir = file("${project.buildDir}/nodejs")
     yarnWorkDir = file("${project.buildDir}/yarn")
 }
-
+// ./gradlew visualization:frontend:yarnAdd -PpackageName=vue-dnd
+task yarnAdd(type: YarnTask) {
+    args = ['add', packageName]
+}
 task yarnInstall(type: YarnTask, dependsOn: yarn) {
     args = []
 }
