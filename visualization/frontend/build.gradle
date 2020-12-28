@@ -23,6 +23,9 @@ node {
     yarnWorkDir = file("${project.buildDir}/yarn")
 }
 
+task yarnInstall(type: YarnTask, dependsOn: yarn) {
+    args = []
+}
 task yarnBuild(type: YarnTask, dependsOn: yarn) {
     args = ["run", "build"]
 }
