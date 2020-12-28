@@ -19,7 +19,7 @@ task copyBackend(type: Copy) {
     dependsOn(":visualization:backend:bootJar")
 }
 task copyFrontend(type: Copy) {
-    from("${project(":visualization:frontend").file("dist").getAbsolutePath()}")
+    from("${project(":visualization:frontend").buildDir.getAbsolutePath()}/dist")
     into(frontendPath)
     dependsOn(":visualization:frontend:yarnBuild")
 }

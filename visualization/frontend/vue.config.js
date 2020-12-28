@@ -1,4 +1,5 @@
 module.exports = {
+  outputDir: "build/dist",
   devServer: {
     port: 5000,
     proxy: {
