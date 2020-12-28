@@ -23,10 +23,7 @@ node {
 }
 // ./gradlew visualization:frontend:yarnAdd -PpackageName=vue-dnd
 task yarnAdd(type: YarnTask) {
-    args = ['add', packageName]
-}
-task yarnInstall(type: YarnTask, dependsOn: yarn) {
-    args = []
+    args = ['add', project.findProperty("packageName")]
 }
 task yarnBuild(type: YarnTask, dependsOn: yarn) {
     args = ["run", "build"]
