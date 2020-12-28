@@ -8,7 +8,6 @@ buildscript {
 
 plugins {
     id "com.github.node-gradle.node" version "2.2.4"
-    id "de.undercouch.download"
 }
 
 task setRegistry(type: YarnTask) {
