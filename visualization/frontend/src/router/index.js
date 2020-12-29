@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 
 import Hello from '../components/HelloWorld.vue'
 import FlinkChart from '../components/FlinkChart.vue'
+import Dashboard from './Dashboard'
 
 Vue.use(VueRouter)
 
@@ -17,6 +18,11 @@ export default new VueRouter({
       path: '/flink-chart',
       name: 'FlinkChart',
       component: FlinkChart
+    },
+    {
+      path: '/dashboard',
+      name: 'Dashboard',
+      component: Dashboard
     }
   ]
 })
