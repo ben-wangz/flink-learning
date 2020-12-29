@@ -7218,6 +7218,11 @@ slice-ansi@^2.1.0:
     astral-regex "^1.0.0"
     is-fullwidth-code-point "^2.0.0"
 
+smooth-dnd@0.12.1:
+  version "0.12.1"
+  resolved "https://registry.npm.taobao.org/smooth-dnd/download/smooth-dnd-0.12.1.tgz#cdb44c972355659e32770368b29b6a80e0ed96f1"
+  integrity sha1-zbRMlyNVZZ4ydwNosptqgODtlvE=
+
 snapdragon-node@^2.0.1:
   version "2.1.1"
   resolved "https://registry.npm.taobao.org/snapdragon-node/download/snapdragon-node-2.1.1.tgz#6c175f86ff14bdb0724563e8f3c1b021a286853b"
@@ -7275,6 +7280,11 @@ sort-keys@^1.0.0:
   integrity sha1-RBttTTRnmPG05J6JIK37oOVD+a0=
   dependencies:
     is-plain-obj "^1.0.0"
+
+sortablejs@1.10.2:
+  version "1.10.2"
+  resolved "https://registry.npm.taobao.org/sortablejs/download/sortablejs-1.10.2.tgz?cache=0&sync_timestamp=1608828033159&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fsortablejs%2Fdownload%2Fsortablejs-1.10.2.tgz#6e40364d913f98b85a14f6678f92b5c1221f5290"
+  integrity sha1-bkA2TZE/mLhaFPZnj5K1wSIfUpA=
 
 source-list-map@^2.0.0:
   version "2.0.1"
@@ -8168,6 +8178,13 @@ vue-router@^3.4.9:
   resolved "https://registry.npm.taobao.org/vue-router/download/vue-router-3.4.9.tgz?cache=0&sync_timestamp=1607349532945&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fvue-router%2Fdownload%2Fvue-router-3.4.9.tgz#c016f42030ae2932f14e4748b39a1d9a0e250e66"
   integrity sha1-wBb0IDCuKTLxTkdIs5odmg4lDmY=
 
+vue-smooth-dnd@^0.8.1:
+  version "0.8.1"
+  resolved "https://registry.npm.taobao.org/vue-smooth-dnd/download/vue-smooth-dnd-0.8.1.tgz#b1c584cfe49b830a402548b4bf08f00f68f430e5"
+  integrity sha1-scWEz+SbgwpAJUi0vwjwD2j0MOU=
+  dependencies:
+    smooth-dnd "0.12.1"
+
 vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
   version "4.1.2"
   resolved "https://registry.npm.taobao.org/vue-style-loader/download/vue-style-loader-4.1.2.tgz#dedf349806f25ceb4e64f3ad7c0a44fba735fcf8"
@@ -8193,6 +8210,13 @@ vue@^2.6.11:
   version "2.6.12"
   resolved "https://registry.npm.taobao.org/vue/download/vue-2.6.12.tgz#f5ebd4fa6bd2869403e29a896aed4904456c9123"
   integrity sha1-9evU+mvShpQD4pqJau1JBEVskSM=
+
+vuedraggable@^2.24.3:
+  version "2.24.3"
+  resolved "https://registry.npm.taobao.org/vuedraggable/download/vuedraggable-2.24.3.tgz?cache=0&sync_timestamp=1606756924603&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fvuedraggable%2Fdownload%2Fvuedraggable-2.24.3.tgz#43c93849b746a24ce503e123d5b259c701ba0d19"
+  integrity sha1-Q8k4SbdGokzlA+Ej1bJZxwG6DRk=
+  dependencies:
+    sortablejs "1.10.2"
 
 watchpack-chokidar2@^2.0.0:
   version "2.0.0"
