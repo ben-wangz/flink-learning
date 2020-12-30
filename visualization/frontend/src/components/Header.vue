@@ -8,20 +8,14 @@
             fit="contain">
         </el-image>
       </el-col>
-      <el-col :span="2" class="text_center footer_column_size">
-        <a href="#">
-          <p style="color: #42b983">About</p>
-        </a>
+      <el-col :span="2" class="footer_column_size">
+        <a class="text_center" style="color: #42b983" href="#">About</a>
       </el-col>
-      <el-col :span="2" class="text_center footer_column_size">
-        <a href="#">
-          <p style="color: #42b983">Data Source</p>
-        </a>
+      <el-col :span="2" class="footer_column_size">
+        <a class="text_center" style="color: #42b983" href="#">Data Source</a>
       </el-col>
-      <el-col :span="2" class="text_center footer_column_size">
-        <a href="#">
-          <p style="color: #42b983">Help</p>
-        </a>
+      <el-col :span="2" class="footer_column_size">
+        <a class="text_center" style="color: #42b983" href="#">Help</a>
       </el-col>
     </el-row>
   </el-header>
@@ -38,6 +32,11 @@ export default {
 
 <style>
 .text_center {
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
   text-align: center;
 }
 

@@ -1,20 +1,14 @@
 <template>
   <el-footer>
     <el-row>
-      <el-col :span="2" class="text_center footer_column_size">
-        <a href="#">
-          <p style="color: #42b983">Business</p>
-        </a>
+      <el-col :span="2" class="footer_column_size">
+        <a class="text_center" style="color: #42b983" href="#">Business</a>
       </el-col>
-      <el-col :span="20" class="text_center footer_column_size">
-        <a href="#">
-          <p style="color: #42b983">Best Practise</p>
-        </a>
+      <el-col :span="20" class="footer_column_size">
+        <a class="text_center" style="color: #42b983" href="#">Best Practise</a>
       </el-col>
-      <el-col :span="2" class="text_center footer_column_size">
-        <a href="#">
-          <p style="color: #42b983">Settings</p>
-        </a>
+      <el-col :span="2" class="footer_column_size">
+        <a class="text_center" style="color: #42b983" href="#">Settings</a>
       </el-col>
     </el-row>
   </el-footer>
