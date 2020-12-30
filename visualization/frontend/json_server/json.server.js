@@ -5,7 +5,7 @@ const middlewares = jsonServer.defaults()
 
 server.use(middlewares)
 server.get('/greeting', (req, res) => {
-    res.jsonp(req.query["username"])
+    res.send(req.query["username"])
 })
 server.use(router)
 server.listen(3000, () => {
