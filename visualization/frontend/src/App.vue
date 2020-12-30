@@ -1,31 +1,29 @@
 <template>
-  <el-container id="app">
-    <el-header class="dev-bordered">
-      <!--TODO 这里需要调整一下样式-->
-      <img alt="Vue logo" src="./assets/logo.png" style="height: 50px; margin-left: -500px">
-    </el-header>
+  <el-container id="app" direction="vertical">
+    <Header></Header>
     <el-main>
       <router-view></router-view>
     </el-main>
-    <el-footer class="dev-bordered">
-    </el-footer>
+    <Footer></Footer>
   </el-container>
 </template>
 
 <script>
+import Header from "./components/Header.vue";
+import Footer from "./components/Footer.vue";
+
 export default {
-  name: 'App',
+  name: "App",
+  components: {Header, Footer},
+  data() {
+    return {};
+  },
 }
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #409EFF;
-  margin-top: 60px;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif
 }
 
 .dev-bordered {
