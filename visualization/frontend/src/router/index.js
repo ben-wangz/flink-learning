@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 
 import Hello from '../components/HelloWorld.vue'
 import FlinkChart from '../components/FlinkChart.vue'
-import Dashboard from './Dashboard'
+import Dashboard from '../components/Dashboard'
 
 Vue.use(VueRouter)
 
