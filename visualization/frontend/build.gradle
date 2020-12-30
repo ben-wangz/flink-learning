@@ -22,9 +22,13 @@ node {
     yarnWorkDir = file("${project.buildDir}/yarn")
 }
 // ./gradlew visualization:frontend:yarnAdd -PpackageName=vue-dnd
+// ./gradlew visualization:frontend:yarnAdd -PpackageName=vue-dnd -Pdev
 task yarnAdd(type: YarnTask) {
     def packageName = project.findProperty("packageName")
     args = project.hasProperty("dev") ? ["--dev", "add", packageName] : ["add", packageName]
+}
+task yarnJsonServer(type: YarnTask, dependsOn: yarn) {
+    args = ["run", "json-serve"]
 }
 task yarnBuild(type: YarnTask, dependsOn: yarn) {
     args = ["run", "build"]
