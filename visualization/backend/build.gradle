@@ -54,7 +54,7 @@ task runWithJar(type: Exec) {
     )
     doFirst {
         println("running command: ${String.join(" ", getCommandLine())}")
-        println("access with chrome: http://localhost:8080/greeting?username=${RandomStringUtils.randomAlphabetic(8)}")
+        println("access with chrome: http://localhost:8080/api/greeting?username=${RandomStringUtils.randomAlphabetic(8)}")
     }
     dependsOn(bootJar)
 }

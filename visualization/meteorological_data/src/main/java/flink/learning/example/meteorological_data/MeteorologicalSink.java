@@ -31,7 +31,7 @@ public class MeteorologicalSink<DataType extends KeyValueData> implements SinkFu
     @Override
     public void invoke(DataType data, Context context) throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost(String.format("http://%s:%s/updateData", serviceHost, servicePort));
+        HttpPost httpPost = new HttpPost(String.format("http://%s:%s/api/data_keeper/updateData", serviceHost, servicePort));
         List<NameValuePair> nameValuePairList = new ArrayList<>();
         nameValuePairList.add(new BasicNameValuePair("name", String.format("%s_%s", namePrefix, data.key())));
         nameValuePairList.add(new BasicNameValuePair("json", data.value()));

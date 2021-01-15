@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+@RequestMapping("/api/data_keeper")
 @RestController
 public class DataKeeperController {
     @Autowired

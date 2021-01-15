@@ -13,7 +13,7 @@ public class GreetingController {
     @Autowired
     private GreetingService greetingService;
 
-    @RequestMapping("/greeting")
+    @RequestMapping("/api/greeting")
     public String greeting(@RequestParam("username") String username) throws IOException {
         return greetingService.greeting(username);
     }

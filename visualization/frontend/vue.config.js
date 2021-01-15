@@ -9,10 +9,10 @@ module.exports = {
     devServer: {
         port: 5000,
         proxy: {
-            '/queryDataWithPrefix': {
-                target: 'http://localhost:8080',
+            '^/api':{
+                target: 'http://localhost:3000',
                 changeOrigin: true
             }
-        }
+        },
     }
 }

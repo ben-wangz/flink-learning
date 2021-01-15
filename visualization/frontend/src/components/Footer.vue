@@ -1,5 +1,5 @@
 <template>
-  <el-footer>
+  <el-footer style="border-radius: 5px">
     <el-row>
       <el-col :span="2" class="footer_column_size">
         <a class="text_center" style="color: #42b983" href="#">Business</a>

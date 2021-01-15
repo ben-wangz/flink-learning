@@ -1,35 +1,22 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div>
+    <el-upload
+        class="upload-demo"
+        action="https://jsonplaceholder.typicode.com/posts/"
+        :on-preview="handlePreview"
+        :on-remove="handleRemove"
+        :before-remove="beforeRemove"
+        multiple :limit="1"
+        :on-exceed="handleExceed"
+        :file-list="fileList">
+      <el-button size="small" type="primary">点击上传</el-button>
+      <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+    </el-upload>
+    <el-input placeholder="请输入内容" v-model="imageUri"></el-input>
+    <el-image :src="imageUri" fit="contain">
+    </el-image>
     <router-link to="/flink-chart">查看图表</router-link>
-    <div>API RETURN: {{apiContent}}</div>
-
+    <div>API RETURN: {{ apiContent }}</div>
   </div>
 </template>
 
@@ -40,45 +27,60 @@ export default {
     msg: String,
   },
   data() {
-    return { apiContent: ''}
+    return {
+      apiContent: '',
+      fileList: [],
+      imageUri: "https://ci.apache.org/projects/flink/flink-docs-release-1.12/page/img/navbar-brand-logo.jpg",
+    }
+  },
+  methods: {
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePreview(file) {
+      console.log(file);
+      let reader = new FileReader();
+      reader.onload = function (e) {
+        this.imageUri = e.target.result
+      }
+      reader.readAsDataURL(file);
+      console.log(file)
+    },
+    handleExceed(files) {
+      console.log(files[0])
+    },
+    beforeRemove(file, fileList) {
+      console.log(fileList)
+      return this.$confirm(`确定移除 ${file.name}？`);
+    }
   },
   created() {
     const self = this
-    fetch('/greeting?username=' + randomString(8))
-      .then(function(response) {
-       return response.text();
-      }).then(function(res) {
-        console.log(res)
-        self.apiContent = res
-      }).catch((e) => {
-        console.log(e)
-      })
+    fetch('/api/greeting?username=' + randomString(8))
+        .then(function (response) {
+          return response.text();
+        }).then(function (res) {
+      console.log(res)
+      self.apiContent = res
+    }).catch((e) => {
+      console.log(e)
+    })
   }
 }
+
 function randomString(length) {
-   var result           = '';
-   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-   var charactersLength = characters.length;
-   for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-   }
-   return result;
+  var result = '';
+  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
 a {
   color: #42b983;
 }

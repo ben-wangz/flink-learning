@@ -6,25 +6,26 @@
 
 <script>
 import axios from 'axios'
-const URL = '/queryDataWithPrefix?namePrefix=MeteorologicalDataStream_';
+
+const URL = '/api/data_keeper/queryDataWithPrefix?namePrefix=MeteorologicalDataStream_';
 const baseOption = {
-    title: {
-        text: 'Flink动态数据'
-    },
-    tooltip: {},
-    legend: {
-        data:['时间']
-    },
-    xAxis: {
-      type: 'category',
-      data: []
-    },
-    yAxis: {},
-    series: [{
-        name: '值',
-        type: 'line',
-        data: []
-    }]
+  title: {
+    text: 'Flink动态数据'
+  },
+  tooltip: {},
+  legend: {
+    data: ['时间']
+  },
+  xAxis: {
+    type: 'category',
+    data: []
+  },
+  yAxis: {},
+  series: [{
+    name: '值',
+    type: 'line',
+    data: []
+  }]
 };
 let __interval = 2000;
 let __timer;
@@ -33,17 +34,18 @@ function preProcess(res) {
   let x = [];
   let y = [];
   Object.keys(res.data)
-    .sort((a,b) => +a - +b)
-    .forEach(key => {
-      x.push(key);
-      y.push(res.data[key]);
-    })
+      .sort((a, b) => +a - +b)
+      .forEach(key => {
+        x.push(key);
+        y.push(res.data[key]);
+      })
   return {x, y};
 }
+
 export default {
   name: 'FlinkChart',
   data() {
-    return { chartOptions: baseOption }
+    return {chartOptions: baseOption}
   },
   mounted() {
     this.init();
@@ -88,6 +90,7 @@ export default {
 .flink-chart {
   text-align: center;
 }
+
 .echarts {
   margin: 0 auto;
   width: 800px;
