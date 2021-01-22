@@ -47,8 +47,9 @@ public class RandomWordGenerator implements Iterable<String>, Serializable {
 
     public void configure() throws IOException {
         try (Stream<String> stringStream = Files.lines(Paths.get(baseDataPath))) {
-            words = stringStream.distinct()
+            words = stringStream
                     .flatMap(line -> StreamSupport.stream(SPLITTER.split(line).spliterator(), false))
+                    .distinct()
                     .collect(Collectors.toList());
         }
         random = new Random(randomSeed.hashCode());
