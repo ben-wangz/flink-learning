@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -15,6 +16,7 @@ public class RandomMeteorologicalDataGenerator implements Iterable<String>, Seri
     private final String randomSeed;
     private final int sleep;
     private final TimeUnit timeUnit;
+    private final List<String> idList;
     private transient Random random;
     private transient boolean ends;
     private transient Double lastTemperature;
@@ -24,9 +26,19 @@ public class RandomMeteorologicalDataGenerator implements Iterable<String>, Seri
             int sleep,
             TimeUnit timeUnit
     ) {
+        this(randomSeed, sleep, timeUnit, null);
+    }
+
+    public RandomMeteorologicalDataGenerator(
+            String randomSeed,
+            int sleep,
+            TimeUnit timeUnit,
+            List<String> idList
+    ) {
         this.randomSeed = randomSeed;
         this.sleep = sleep;
         this.timeUnit = timeUnit;
+        this.idList = idList;
     }
 
     public boolean configured() {
@@ -56,14 +68,20 @@ public class RandomMeteorologicalDataGenerator implements Iterable<String>, Seri
             @Override
             public String next() {
                 try {
-                    timeUnit.sleep(sleep);
+                    long sleepMs = TimeUnit.MILLISECONDS.convert(sleep, timeUnit);
+                    TimeUnit.MILLISECONDS.sleep(null == idList || idList.isEmpty() ? sleepMs : sleepMs / idList.size());
                 } catch (InterruptedException e) {
                     LOGGER.warn(String.format("interrupted: %s", e.getMessage()), e);
                 }
                 double wave = random.nextDouble() * 3 - 3.0 / 2;
                 double currentTemperature = lastTemperature + wave;
                 lastTemperature = currentTemperature;
-                return String.valueOf(currentTemperature);
+                if (null == idList || idList.isEmpty()) {
+                    return String.valueOf(currentTemperature);
+                } else {
+                    return String.format("%s,%s,%s",
+                            System.currentTimeMillis(), idList.get(random.nextInt(idList.size())), lastTemperature);
+                }
             }
         };
     }

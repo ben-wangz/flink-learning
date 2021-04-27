@@ -4,7 +4,6 @@ public class MeteorologicalData implements KeyValueData {
     private String key;
     private String value;
 
-
     public MeteorologicalData() {
     }
 
@@ -37,5 +36,10 @@ public class MeteorologicalData implements KeyValueData {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{\"key\": \"%s\", \"value\": \"%s\"}", key, value);
     }
 }

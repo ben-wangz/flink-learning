@@ -22,19 +22,24 @@ repositories {
 
 def scalaBinaryVersion = project.rootProject.ext.scalaBinaryVersion
 dependencies {
-    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-core"))
-    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-java"))
-    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-scala_${scalaBinaryVersion}"))
-    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-clients_${scalaBinaryVersion}"))
-    implementation(project.rootProject.ext.jarDependency("org.apache.flink", "flink-connector-kafka_2.11"))
+    compileOnly(project.rootProject.ext.jarDependency("org.apache.flink", "flink-core"))
+    compileOnly(project.rootProject.ext.jarDependency("org.apache.flink", "flink-java"))
+    compileOnly(project.rootProject.ext.jarDependency("org.apache.flink", "flink-scala_${scalaBinaryVersion}"))
+    compileOnly(project.rootProject.ext.jarDependency("org.apache.flink", "flink-clients_${scalaBinaryVersion}"))
+    compileOnly(project.rootProject.ext.jarDependency("org.apache.flink", "flink-connector-kafka_2.11"))
+    compileOnly(project.rootProject.ext.jarDependency("org.apache.flink", "flink-table-api-java-bridge_2.11"))
+    compileOnly(project.rootProject.ext.jarDependency("org.apache.flink", "flink-table-planner-blink_2.11"))
+    compileOnly(project.rootProject.ext.jarDependency("org.apache.flink", "flink-streaming-scala_2.11"))
     implementation(project.rootProject.ext.jarDependency("org.apache.httpcomponents", "httpclient"))
+    implementation(project.rootProject.ext.jarDependency("org.slf4j", "slf4j-api"))
+    implementation(project.rootProject.ext.jarDependency("org.slf4j", "slf4j-simple"))
     testImplementation(project.rootProject.ext.jarDependency("junit", "junit"))
 }
 test {
     useJUnit()
 }
 
-def mainClass = "flink.learning.example.meteorological_data.MeteorologicalDataStream"
+def mainClass = "flink.learning.example.meteorological_data.Entrypoint"
 def jarBaseName = project.rootProject.ext.visualizationMeteorologicalDataJarBaseName
 def jarPath = project.rootProject.ext.visualizationMeteorologicalDataJarPath
 jar {
@@ -47,18 +52,31 @@ jar {
     }
 }
 
-def flinkClientJarName = "flink-clients_2.11-1.11.2.jar"
 def dependencyJarPath = "${project.buildDir}/dependencies"
-task copyDependencies(type: Copy) {
-    from configurations.default
-    include "**/${flinkClientJarName}"
+task copyDependencies(type: Sync) {
+    from configurations.compileClasspath
+    include "**/*"
     into dependencyJarPath
 }
 task runMeteorologicalData(type: Exec) {
     executable("java")
     args(
-            "-classpath", "${dependencyJarPath}/${flinkClientJarName}:${jarPath}",
+            "-classpath", "${dependencyJarPath}/*:${jarPath}",
             mainClass,
+            "regular",
+    )
+    doFirst {
+        println("running command: ${String.join(" ", getCommandLine())}")
+    }
+    dependsOn(jar)
+    dependsOn(copyDependencies)
+}
+task runMeteorologicalDataWithTable(type: Exec) {
+    executable("java")
+    args(
+            "-classpath", "${dependencyJarPath}/*:${jarPath}",
+            mainClass,
+            "table",
     )
     doFirst {
         println("running command: ${String.join(" ", getCommandLine())}")

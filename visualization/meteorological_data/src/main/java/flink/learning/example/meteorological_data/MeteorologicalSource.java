@@ -2,6 +2,7 @@ package flink.learning.example.meteorological_data;
 
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
@@ -12,10 +13,20 @@ public class MeteorologicalSource implements SourceFunction<String> {
             String randomSeed,
             int sleep,
             TimeUnit timeUnit) {
+        this(randomSeed, sleep, timeUnit, null);
+    }
+
+    public MeteorologicalSource(
+            String randomSeed,
+            int sleep,
+            TimeUnit timeUnit,
+            List<String> idList
+    ) {
         randomMeteorologicalDataGenerator = new RandomMeteorologicalDataGenerator(
                 randomSeed,
                 sleep,
-                timeUnit
+                timeUnit,
+                idList
         );
     }
 

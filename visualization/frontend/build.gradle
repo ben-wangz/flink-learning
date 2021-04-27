@@ -7,7 +7,7 @@ buildscript {
 }
 
 plugins {
-    id "com.github.node-gradle.node" version "2.2.4"
+    id "com.github.node-gradle.node" version "3.0.1"
 }
 
 task setRegistry(type: YarnTask) {
@@ -15,9 +15,9 @@ task setRegistry(type: YarnTask) {
 }
 yarn.dependsOn(setRegistry)
 node {
-    download(true)
-    version("14.15.3")
-    distBaseUrl("https://npm.taobao.org/mirrors/node")
+    download = true
+    version = "14.15.3"
+    distBaseUrl = "https://npm.taobao.org/mirrors/node"
     workDir = file("${project.buildDir}/nodejs")
     yarnWorkDir = file("${project.buildDir}/yarn")
 }
